@@ -19,6 +19,7 @@ args = parser.parse_args()
 
 image_path = args.image_path
 row_height = 10
+animation_speed = 0.1
 animation_interval = 15
 use_camera = args.camera
 
@@ -67,21 +68,21 @@ tk_image = ImageTk.PhotoImage(image)
 label = tk.Label(window)
 label.pack(fill=tk.BOTH)
 
-column_position = 0
+column_position = 0.0
 direction = 1
 is_fullscreen = False
 
 
 # Function to update the image with the grid image
 def update_image():
-    global column_position, direction, row_height, animation_interval, image
+    global column_position, direction, row_height, animation_interval, image, animation_speed
 
     if use_camera:
         ret, frame = cap.read()
         if ret:
             image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
-    column_position += direction
+    column_position += direction * animation_speed
 
     if column_position >= image.width:
         column_position = image.width - 1
@@ -91,7 +92,24 @@ def update_image():
         column_position = 0
         direction *= -1
 
-    grid_image = create_grid_image(image, row_height, column_position)
+    col_floor = int(column_position)
+    col_ceil = min(col_floor + 1, image.width - 1)
+    blend_factor = column_position - col_floor
+
+    width, height = image.size
+    grid_image = Image.new("RGB", (width, height))
+    for y in range(0, height, row_height):
+        avg_color_floor = average_color(image, col_floor, y, row_height)
+        avg_color_ceil = average_color(image, col_ceil, y, row_height)
+        blended_color = tuple(
+            int(
+                avg_color_floor[i] * (1 - blend_factor)
+                + avg_color_ceil[i] * blend_factor
+            )
+            for i in range(3)
+        )
+        grid_image.paste(blended_color, [0, y, width, y + row_height])
+
     grid_image = grid_image.resize((window.winfo_width(), window.winfo_height()))
     tk_grid_image = ImageTk.PhotoImage(grid_image)
     label.config(image=tk_grid_image)
@@ -128,15 +146,14 @@ def decrease_row_height(event=None):
         row_height -= 1
 
 
-def increase_animation_interval(event=None):
-    global animation_interval
-    animation_interval += 3
+def increase_animation_speed(event=None):
+    global animation_speed
+    animation_speed *= 2
 
 
-def decrease_animation_interval(event=None):
-    global animation_interval
-    if animation_interval > 6:
-        animation_interval -= 3
+def decrease_animation_speed(event=None):
+    global animation_speed
+    animation_speed /= 2
 
 
 # Bind the F key to toggle fullscreen, Esc key to quit, Up key to increase row height, and Down key to decrease row height
@@ -145,8 +162,8 @@ window.bind("<f>", toggle_fullscreen)
 window.bind("<Escape>", quit)
 window.bind("<Up>", increase_row_height)
 window.bind("<Down>", decrease_row_height)
-window.bind("<Left>", increase_animation_interval)
-window.bind("<Right>", decrease_animation_interval)
+window.bind("<Right>", increase_animation_speed)
+window.bind("<Left>", decrease_animation_speed)
 
 # Schedule the update_image function to run after the window is initialized
 window.after(100, update_image)
