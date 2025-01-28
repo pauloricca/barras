@@ -25,11 +25,9 @@ use_camera = args.camera
 
 
 def average_color(image, x, y, size):
-    pixels = image.crop((x, y, x + size, y + size)).getdata()
-    r = sum(p[0] for p in pixels) // len(pixels)
-    g = sum(p[1] for p in pixels) // len(pixels)
-    b = sum(p[2] for p in pixels) // len(pixels)
-    return (r, g, b)
+    pixels = np.array(image.crop((x, y, x + size, y + size)))
+    avg_color = pixels.mean(axis=(0, 1)).astype(int)
+    return tuple(avg_color)
 
 
 def create_grid_image(image, row_height, column_position):
@@ -72,6 +70,16 @@ column_position = 0.0
 direction = 1
 is_fullscreen = False
 
+# Precompute the average colors for each column if not using camera
+if not use_camera:
+    width, height = image.size
+    avg_colors = np.zeros(
+        (width, (height + row_height - 1) // row_height, 3), dtype=int
+    )
+    for x in range(width):
+        for y in range(0, height, row_height):
+            avg_colors[x, y // row_height] = average_color(image, x, y, row_height)
+
 
 # Function to update the image with the grid image
 def update_image():
@@ -99,8 +107,12 @@ def update_image():
     width, height = image.size
     grid_image = Image.new("RGB", (width, height))
     for y in range(0, height, row_height):
-        avg_color_floor = average_color(image, col_floor, y, row_height)
-        avg_color_ceil = average_color(image, col_ceil, y, row_height)
+        if use_camera:
+            avg_color_floor = average_color(image, col_floor, y, row_height)
+            avg_color_ceil = average_color(image, col_ceil, y, row_height)
+        else:
+            avg_color_floor = avg_colors[col_floor, y // row_height]
+            avg_color_ceil = avg_colors[col_ceil, y // row_height]
         blended_color = tuple(
             int(
                 avg_color_floor[i] * (1 - blend_factor)
