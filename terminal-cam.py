@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import argparse
 
 # ASCII characters used to build the output text
 ASCII_CHARS = " .:=+*#@"
@@ -20,13 +21,23 @@ def grayify(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 
-def pixels_to_ascii(image):
+def invert_colors(image):
+    return cv2.bitwise_not(image)
+
+
+def pixels_to_ascii(image, invert=False):
+    if invert:
+        image = invert_colors(image)
     pixels = image.flatten()
     ascii_str = "".join([ASCII_CHARS[pixel // 32] for pixel in pixels])
     return ascii_str
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Convert webcam feed to ASCII art.")
+    parser.add_argument("-i", "--invert", action="store_true", help="Invert the colors")
+    args = parser.parse_args()
+
     cap = cv2.VideoCapture(0)
 
     while True:
@@ -36,7 +47,7 @@ def main():
 
         gray_image = grayify(frame)
         resized_image = resize_image(gray_image)
-        ascii_str = pixels_to_ascii(resized_image)
+        ascii_str = pixels_to_ascii(resized_image, invert=args.invert)
 
         img_width = resized_image.shape[1]
         ascii_img = "\n".join(
