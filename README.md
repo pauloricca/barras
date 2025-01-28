@@ -13,9 +13,9 @@ This project displays an animation of coloured rows based on a given image using
 ## Usage
 
 To run the program:
-    ```
-    python barras.py [IMAGE-FILE-NAME] [-c for camera] [-m for circular mask]
-    ```
+```
+python barras.py [IMAGE-FILE-NAME] [-c for camera] [-m for circular mask]
+```
 
 ## Keyboard Shortcuts
 f: toggle fullscreen
