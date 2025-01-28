@@ -203,9 +203,14 @@ def decrease_animation_speed(event=None):
     animation_speed /= 2
 
 
+def toggle_mask(event=None):
+    global use_circle_mask
+    use_circle_mask = not use_circle_mask
+
+
 # Bind the F key to toggle fullscreen, Esc key to quit, Up key to increase row height, and Down key to decrease row height
-window.bind("<F>", toggle_fullscreen)
 window.bind("<f>", toggle_fullscreen)
+window.bind("<m>", toggle_mask)
 window.bind("<Escape>", quit)
 window.bind("<Up>", increase_row_height)
 window.bind("<Down>", decrease_row_height)
