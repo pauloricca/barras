@@ -1,5 +1,5 @@
 import argparse
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw
 import tkinter as tk
 import cv2
 import numpy as np
@@ -15,6 +15,12 @@ parser.add_argument(
     action="store_true",
     help="Use the webcam instead of an image file.",
 )
+parser.add_argument(
+    "-m",
+    "--mask",
+    action="store_true",
+    help="Apply a circular mask to the image.",
+)
 args = parser.parse_args()
 
 image_path = args.image_path
@@ -22,6 +28,7 @@ row_height = 10
 animation_speed = 0.1
 animation_interval = 15
 use_camera = args.camera
+use_circle_mask = args.mask  # Map the argument to the variable
 
 
 def average_color(image, x, y, size):
@@ -127,6 +134,27 @@ def update_image():
         grid_image = grid_image.resize(
             (window.winfo_width(), window.winfo_height()), Image.NEAREST
         )
+
+    # Apply circle mask if use_circle_mask is True
+    if use_circle_mask:
+        width, height = grid_image.size
+        mask = Image.new("L", (width, height), 0)
+        draw = ImageDraw.Draw(mask)
+        radius = min(width, height) // 2
+        center = (width // 2, height // 2)
+        draw.ellipse(
+            (
+                center[0] - radius,
+                center[1] - radius,
+                center[0] + radius,
+                center[1] + radius,
+            ),
+            fill=255,
+        )
+        grid_image.putalpha(mask)
+        black_bg = Image.new("RGB", (width, height), (0, 0, 0))
+        black_bg.paste(grid_image, (0, 0), mask)
+        grid_image = black_bg
 
     tk_grid_image = ImageTk.PhotoImage(grid_image)
     label.config(image=tk_grid_image)
