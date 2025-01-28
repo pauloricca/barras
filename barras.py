@@ -1,12 +1,26 @@
+import argparse
 from PIL import Image, ImageTk
 import tkinter as tk
 import cv2
 import numpy as np
 
-image_path = "image-4.jpg"
+# Command line argument parsing
+parser = argparse.ArgumentParser(description="Image display with grid animation.")
+parser.add_argument(
+    "image_path", nargs="?", default="image.jpg", help="Path to the image file."
+)
+parser.add_argument(
+    "-c",
+    "--camera",
+    action="store_true",
+    help="Use the webcam instead of an image file.",
+)
+args = parser.parse_args()
+
+image_path = args.image_path
 row_height = 10
-animation_speed = 15
-use_camera = False  # Set this to True to use the webcam
+animation_interval = 15
+use_camera = args.camera
 
 
 def average_color(image, x, y, size):
@@ -60,7 +74,7 @@ is_fullscreen = False
 
 # Function to update the image with the grid image
 def update_image():
-    global column_position, direction, row_height, animation_speed, image
+    global column_position, direction, row_height, animation_interval, image
 
     if use_camera:
         ret, frame = cap.read()
@@ -82,7 +96,7 @@ def update_image():
     tk_grid_image = ImageTk.PhotoImage(grid_image)
     label.config(image=tk_grid_image)
     label.image = tk_grid_image
-    window.after(animation_speed, update_image)
+    window.after(animation_interval, update_image)
 
 
 def toggle_fullscreen(event=None):
@@ -103,10 +117,36 @@ def quit(event=None):
     window.quit()
 
 
-# Bind the F key to toggle fullscreen and Esc key to quit
+def increase_row_height(event=None):
+    global row_height
+    row_height += 1
+
+
+def decrease_row_height(event=None):
+    global row_height
+    if row_height > 1:
+        row_height -= 1
+
+
+def increase_animation_interval(event=None):
+    global animation_interval
+    animation_interval += 3
+
+
+def decrease_animation_interval(event=None):
+    global animation_interval
+    if animation_interval > 6:
+        animation_interval -= 3
+
+
+# Bind the F key to toggle fullscreen, Esc key to quit, Up key to increase row height, and Down key to decrease row height
 window.bind("<F>", toggle_fullscreen)
 window.bind("<f>", toggle_fullscreen)
 window.bind("<Escape>", quit)
+window.bind("<Up>", increase_row_height)
+window.bind("<Down>", decrease_row_height)
+window.bind("<Left>", increase_animation_interval)
+window.bind("<Right>", decrease_animation_interval)
 
 # Schedule the update_image function to run after the window is initialized
 window.after(100, update_image)
