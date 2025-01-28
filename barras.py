@@ -30,15 +30,6 @@ def average_color(image, x, y, size):
     return tuple(avg_color)
 
 
-def create_grid_image(image, row_height, column_position):
-    width, height = image.size
-    grid_image = Image.new("RGB", (width, height))
-    for y in range(0, height, row_height):
-        avg_color = average_color(image, column_position, y, row_height)
-        grid_image.paste(avg_color, [0, y, width, y + row_height])
-    return grid_image
-
-
 # Open the image file or capture from webcam
 if use_camera:
     cap = cv2.VideoCapture(0)
@@ -70,8 +61,10 @@ column_position = 0.0
 direction = 1
 is_fullscreen = False
 
+
 # Precompute the average colors for each column if not using camera
-if not use_camera:
+def precompute_averages():
+    global avg_colors, image, row_height
     width, height = image.size
     avg_colors = np.zeros(
         (width, (height + row_height - 1) // row_height, 3), dtype=int
@@ -79,6 +72,10 @@ if not use_camera:
     for x in range(width):
         for y in range(0, height, row_height):
             avg_colors[x, y // row_height] = average_color(image, x, y, row_height)
+
+
+if not use_camera:
+    precompute_averages()
 
 
 # Function to update the image with the grid image
@@ -92,8 +89,8 @@ def update_image():
 
     column_position += direction * animation_speed
 
-    if column_position >= image.width:
-        column_position = image.width - 1
+    if column_position >= image.width - animation_speed:
+        column_position = image.width - animation_speed - 1
         direction *= -1
 
     if column_position < 0:
@@ -122,7 +119,15 @@ def update_image():
         )
         grid_image.paste(blended_color, [0, y, width, y + row_height])
 
-    grid_image = grid_image.resize((window.winfo_width(), window.winfo_height()))
+    # Resize if the window size has changed
+    if (
+        window.winfo_width() != grid_image.width
+        or window.winfo_height() != grid_image.height
+    ):
+        grid_image = grid_image.resize(
+            (window.winfo_width(), window.winfo_height()), Image.NEAREST
+        )
+
     tk_grid_image = ImageTk.PhotoImage(grid_image)
     label.config(image=tk_grid_image)
     label.image = tk_grid_image
@@ -150,12 +155,14 @@ def quit(event=None):
 def increase_row_height(event=None):
     global row_height
     row_height += 1
+    precompute_averages()
 
 
 def decrease_row_height(event=None):
     global row_height
     if row_height > 1:
         row_height -= 1
+    precompute_averages()
 
 
 def increase_animation_speed(event=None):
