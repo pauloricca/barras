@@ -4,6 +4,7 @@ import tkinter as tk
 import cv2
 import numpy as np
 import sounddevice as sd
+import time as t
 import scipy.fftpack
 
 # Command line argument parsing
@@ -33,17 +34,24 @@ args = parser.parse_args()
 
 image_path = args.image_path
 row_height = 10
-min_animation_speed = 0.1
+min_animation_speed = 0.5
 animation_speed = 0.1
 animation_interval = 15
 use_camera = args.camera
 use_circle_mask = args.mask  # Map the argument to the variable
 use_sound = args.sound
 
+histogram = None
+
+
+last_histogram_time = 0
+
 
 # Initialize sounddevice
 def get_loudness(indata, frames, time, status):
-    global animation_speed, min_animation_speed
+    global animation_speed, min_animation_speed, histogram, last_histogram_time
+    current_time = t.time()
+
     # Perform FFT
     fft_data = np.abs(scipy.fftpack.fft(indata[:, 0]))
     # Select a frequency band (e.g., 300-3000 Hz)
@@ -58,27 +66,32 @@ def get_loudness(indata, frames, time, status):
         min_animation_speed + band_loudness / 10.0
     )  # Adjust the scaling factor as needed
 
-    # Render histogram
-    histogram = np.zeros(50, dtype=int)
+    if histogram is None:
+        histogram = np.zeros(50, dtype=int)
+
     for i in range(low_idx, high_idx):
         index = int((i - low_idx) / (high_idx - low_idx) * len(histogram))
-        histogram[index] = max(histogram[index], int(fft_data[i] * 10))
+        value = max(histogram[index], int(fft_data[i] * 10))
+        if histogram[index] < value:
+            histogram[index] = value
 
-    # Clear the console
-    print("\033c")
+    # Render histogram every 200 milliseconds
+    if current_time - last_histogram_time >= 0.2:
+        last_histogram_time = current_time
 
-    # Print vertical histogram
-    # max_height = max(histogram)
-    print(histogram)
+        # Clear the console
+        print("\033c")
 
-    for value in histogram:
-        row = ""
-        for level in range(0, 100):
-            if value >= level:
-                row += "#"
-            else:
-                row += "-"
-        print(row)
+        for value in histogram:
+            row = ""
+            for level in range(0, 100):
+                if value >= level:
+                    row += "#"
+                else:
+                    row += "-"
+            print(row)
+
+        histogram = None
 
 
 if use_sound:
