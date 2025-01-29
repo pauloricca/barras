@@ -3,6 +3,8 @@ from PIL import Image, ImageTk, ImageDraw
 import tkinter as tk
 import cv2
 import numpy as np
+import sounddevice as sd
+import scipy.fftpack
 
 # Command line argument parsing
 parser = argparse.ArgumentParser(description="Image display with grid animation.")
@@ -21,14 +23,67 @@ parser.add_argument(
     action="store_true",
     help="Apply a circular mask to the image.",
 )
+parser.add_argument(
+    "-s",
+    "--sound",
+    action="store_true",
+    help="Makes the animation speed sound reactive.",
+)
 args = parser.parse_args()
 
 image_path = args.image_path
 row_height = 10
+min_animation_speed = 0.1
 animation_speed = 0.1
 animation_interval = 15
 use_camera = args.camera
 use_circle_mask = args.mask  # Map the argument to the variable
+use_sound = args.sound
+
+
+# Initialize sounddevice
+def get_loudness(indata, frames, time, status):
+    global animation_speed, min_animation_speed
+    # Perform FFT
+    fft_data = np.abs(scipy.fftpack.fft(indata[:, 0]))
+    # Select a frequency band (e.g., 300-3000 Hz)
+    low_freq = 30
+    high_freq = 30000
+    sample_rate = 44100  # Assuming a sample rate of 44100 Hz
+    low_idx = int(low_freq * len(fft_data) / sample_rate)
+    high_idx = int(high_freq * len(fft_data) / sample_rate)
+    band_loudness = np.mean(fft_data[low_idx:high_idx])
+    # Adjust the animation speed based on the band loudness
+    animation_speed = (
+        min_animation_speed + band_loudness / 10.0
+    )  # Adjust the scaling factor as needed
+
+    # Render histogram
+    histogram = np.zeros(50, dtype=int)
+    for i in range(low_idx, high_idx):
+        index = int((i - low_idx) / (high_idx - low_idx) * len(histogram))
+        histogram[index] = max(histogram[index], int(fft_data[i] * 10))
+
+    # Clear the console
+    print("\033c")
+
+    # Print vertical histogram
+    # max_height = max(histogram)
+    print(histogram)
+
+    for value in histogram:
+        row = ""
+        for level in range(0, 100):
+            if value >= level:
+                row += "#"
+            else:
+                row += "-"
+        print(row)
+
+
+if use_sound:
+    stream = sd.InputStream(callback=get_loudness)
+    stream.start()
 
 
 def average_color(image, x, y, size):
@@ -225,3 +280,8 @@ window.mainloop()
 
 if use_camera:
     cap.release()
+
+# Close the audio stream
+if use_sound:
+    stream.stop()
+    stream.close()
