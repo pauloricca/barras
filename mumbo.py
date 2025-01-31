@@ -379,9 +379,12 @@ def get_fake_error():
     return error
 
 
+is_blinking_on = False
+
+
 # Add the call to add_3d_shapes in the main loop
 def main():
-    global draw_cube, use_colors, fake_error, fake_error_x, fake_error_y, fake_error_frames_remaining
+    global draw_cube, use_colors, fake_error, fake_error_x, fake_error_y, fake_error_frames_remaining, is_blinking_on
     period = 5  # period of the sine function in seconds
     start_time = time.time()
 
@@ -391,11 +394,13 @@ def main():
         if random.random() < (0.1 if use_colors else 0.01):
             use_colors = not use_colors
 
+        is_blinking_on = not is_blinking_on
+
         (width, height) = get_terminal_size()
         current_time = time.time()
         elapsed_time = current_time - start_time
         empty_percentage = (
-            (math.sin(2 * math.pi * elapsed_time / period) + 1) / 2
+            (math.sin(2 * math.pi * elapsed_time / period) ** 3 + 1) / 2
         ) ** 0.01
 
         frame = generate_frame(width, height, empty_percentage)
@@ -423,7 +428,7 @@ def main():
                     0, min(height - 1, fake_error_y + random.randint(-1, 1))
                 )
             for i, line in enumerate(fake_error):
-                if fake_error_y + i < height:
+                if is_blinking_on and fake_error_y + i < height:
                     frame[fake_error_y + i] = (
                         frame[fake_error_y + i][:fake_error_x]
                         + line
