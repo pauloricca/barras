@@ -12,6 +12,9 @@ def get_terminal_size():
 fixed_characters = []
 glitch_characters = []
 glitch_counter = 0
+draw_cube = False
+use_colors = False  # Set this to False to disable colors
+probability_of_colour = 0.1  # Probability of a character being colored
 
 fake_commands = [
     "ls -la",
@@ -90,9 +93,6 @@ fake_commands = [
     "nmcli general ip6erspan",
 ]
 
-use_colors = False  # Set this to False to disable colors
-probability_of_colour = 0.1  # Probability of a character being colored
-
 
 def generate_frame(width, height, empty_percentage):
     frame = []
@@ -137,8 +137,96 @@ def generate_frame(width, height, empty_percentage):
     return frame
 
 
+def rotate_point_3d(x, y, z, angle_x, angle_y, angle_z):
+    # Rotate around x-axis
+    cos_x, sin_x = math.cos(angle_x), math.sin(angle_x)
+    y, z = y * cos_x - z * sin_x, y * sin_x + z * cos_x
+
+    # Rotate around y-axis
+    cos_y, sin_y = math.cos(angle_y), math.sin(angle_y)
+    x, z = x * cos_y + z * sin_y, -x * sin_y + z * cos_y
+
+    # Rotate around z-axis
+    cos_z, sin_z = math.cos(angle_z), math.sin(angle_z)
+    x, y = x * cos_z - y * sin_z, x * sin_z + y * cos_z
+
+    return x, y, z
+
+
+def project_point_3d(x, y, z, width, height, fov, viewer_distance):
+    factor = fov / (viewer_distance + z)
+    x = x * factor + width / 2
+    y = -y * factor + height / 2
+    return int(x), int(y)
+
+
+def draw_shape(frame, vertices, edges, width, height, angle_x, angle_y, angle_z):
+    projected_vertices = []
+    for vertex in vertices:
+        rotated_vertex = rotate_point_3d(*vertex, angle_x, angle_y, angle_z)
+        projected_vertex = project_point_3d(
+            *rotated_vertex, width, height, fov=256, viewer_distance=4
+        )
+        projected_vertices.append(projected_vertex)
+
+    for edge in edges:
+        start, end = edge
+        x1, y1 = projected_vertices[start]
+        x2, y2 = projected_vertices[end]
+        draw_line(frame, x1, y1, x2, y2)
+
+
+def draw_line(frame, x1, y1, x2, y2):
+    dx, dy = x2 - x1, y2 - y1
+    steps = max(abs(dx), abs(dy))
+    x_inc, y_inc = dx / steps, dy / steps
+    x, y = x1, y1
+    for _ in range(steps):
+        if 0 <= int(y) < len(frame) and 0 <= int(x) < len(frame[0]):
+            frame[int(y)] = frame[int(y)][: int(x)] + "#" + frame[int(y)][int(x) + 1 :]
+        x += x_inc
+        y += y_inc
+
+
+def add_3d_shapes(frame, width, height, elapsed_time):
+    angle_x = elapsed_time * 0.5
+    angle_y = elapsed_time * 0.3
+    angle_z = elapsed_time * 0.2
+
+    # Define vertices and edges for a cube
+    cube_vertices = [
+        (-1, -1, -1),
+        (1, -1, -1),
+        (1, 1, -1),
+        (-1, 1, -1),
+        (-1, -1, 1),
+        (1, -1, 1),
+        (1, 1, 1),
+        (-1, 1, 1),
+    ]
+    cube_edges = [
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 0),
+        (4, 5),
+        (5, 6),
+        (6, 7),
+        (7, 4),
+        (0, 4),
+        (1, 5),
+        (2, 6),
+        (3, 7),
+    ]
+
+    draw_shape(
+        frame, cube_vertices, cube_edges, width, height, angle_x, angle_y, angle_z
+    )
+
+
+# Add the call to add_3d_shapes in the main loop
 def main():
-    global glitch_counter
+    global glitch_counter, draw_cube
     period = 1  # period of the sine function in seconds
     start_time = time.time()
 
@@ -151,6 +239,9 @@ def main():
         ) ** 0.01
 
         frame = generate_frame(width, height, empty_percentage)
+
+        if draw_cube:
+            add_3d_shapes(frame, width, height, elapsed_time)
 
         os.system("cls" if os.name == "nt" else "clear")
         for line in frame:
