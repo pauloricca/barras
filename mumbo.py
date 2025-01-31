@@ -370,7 +370,17 @@ def get_fake_error():
             f"    at {random.choice(['PROCEDURE DIVISION', 'DATA DIVISION', 'ENVIRONMENT DIVISION'])} in {random.choice(['program.cbl', 'module.cbl', 'service.cbl'])} line {random.randint(10, 200)}",
         ],
     ]
-    error = random.choice(error_types)
+
+    if random.random() < 0.1:
+        with open(__file__, "r") as f:
+            lines = f.readlines()
+            start_line = random.randint(0, len(lines) - 6)
+            num_lines = random.randint(3, 6)
+            error = lines[start_line : start_line + num_lines]
+            error = [line.strip() for line in error]
+    else:
+        error = random.choice(error_types)
+
     for i in range(len(error)):
         if random.random() < 0.1:  # 10% chance to mutate each character
             error[i] = "".join(
