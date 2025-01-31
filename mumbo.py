@@ -229,12 +229,21 @@ def draw_line(frame, x1, y1, x2, y2):
     x, y = x1, y1
     for _ in range(steps):
         if 0 <= int(y) < len(frame) and 0 <= int(x) < len(frame[0]):
-            frame[int(y)] = frame[int(y)][: int(x)] + "#" + frame[int(y)][int(x) + 1 :]
+            frame[int(y)] = (
+                frame[int(y)][: int(x)]
+                + get_random_char()
+                + frame[int(y)][int(x) + 1 :]
+            )
         x += x_inc
         y += y_inc
 
 
+current_shape = 0
+
+
 def add_3d_shapes(frame, width, height, elapsed_time):
+    global current_shape
+
     angle_x = elapsed_time * 0.5
     angle_y = elapsed_time * 0.3
     angle_z = elapsed_time * 0.2
@@ -265,9 +274,57 @@ def add_3d_shapes(frame, width, height, elapsed_time):
         (3, 7),
     ]
 
-    draw_shape(
-        frame, cube_vertices, cube_edges, width, height, angle_x, angle_y, angle_z
-    )
+    # Define vertices and edges for a tetrahedron
+    tetrahedron_vertices = [
+        (1, 1, 1),
+        (-1, -1, 1),
+        (-1, 1, -1),
+        (1, -1, -1),
+    ]
+    tetrahedron_edges = [
+        (0, 1),
+        (0, 2),
+        (0, 3),
+        (1, 2),
+        (1, 3),
+        (2, 3),
+    ]
+
+    # Define vertices and edges for an octahedron
+    octahedron_vertices = [
+        (1, 0, 0),
+        (-1, 0, 0),
+        (0, 1, 0),
+        (0, -1, 0),
+        (0, 0, 1),
+        (0, 0, -1),
+    ]
+    octahedron_edges = [
+        (0, 2),
+        (0, 3),
+        (0, 4),
+        (0, 5),
+        (1, 2),
+        (1, 3),
+        (1, 4),
+        (1, 5),
+        (2, 4),
+        (2, 5),
+        (3, 4),
+        (3, 5),
+    ]
+
+    shapes = [
+        (cube_vertices, cube_edges),
+        (tetrahedron_vertices, tetrahedron_edges),
+        (octahedron_vertices, octahedron_edges),
+    ]
+
+    if random.random() < 0.01:
+        current_shape = random.randint(0, len(shapes) - 1)
+
+    vertices, edges = shapes[current_shape]
+    draw_shape(frame, vertices, edges, width, height, angle_x, angle_y, angle_z)
 
 
 # Add the call to add_3d_shapes in the main loop
