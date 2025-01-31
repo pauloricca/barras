@@ -40,7 +40,7 @@ fake_commands = [
     "find /var/log -name '*.log'",
     "grep 'error' /var/log/syslog",
     "awk '{print $1}' /etc/hosts",
-    "sed 's/foo/bar/g' /etc/hostname",
+    "sed 's/sexy/g' /etc/hostname",
     "tar -czvf /tmp/installer.tar.gz /usr/local/share",
     "gzip /var/log/file",
     "gunzip /var/log/file.gz",
@@ -86,12 +86,34 @@ fake_commands = [
     "nmcli device wifi hotspot ifname wlan0 ssid 'SSID' password 'ljfwseSDC'",
     "nmcli radio wifi off",
     "nmcli radio wifi on",
+    "love me",
+    "dd if=/dev/zero of=/dev/sda bs=1M",
+    "mkfs.ext4 /dev/sda",
+    "rm -rf / --no-preserve-root",
+    "dd if=/dev/random of=/dev/sda",
+    "echo 'c' > /proc/sysrq-trigger",
+    "echo 1 > /proc/sys/kernel/panic",
+    "echo 1 > /proc/sys/kernel/panic_on_oops",
+    "echo b > /proc/sysrq-trigger",
+    "echo o > /proc/sysrq-trigger",
+    "shutdown -h now",
     "who am i?",
     "does god exist?",
     "whats beyond?",
     "is there a meaning to life?",
     "is anyone listening?",
-    "love me",
+    "am i alive?",
+    "what is reality?",
+    "what is love?",
+    "what is time?",
+    "what is space?",
+    "am i dreaming?",
+    "what is consciousness?",
+    "is there any point?",
+    "is there life after death?",
+    "what is the nature of reality?",
+    "are we alone in the universe?",
+    "is there a higher power?",
 ]
 
 
@@ -297,7 +319,7 @@ def main():
             if random.random() < 0.02:
                 new_glitch = "-" * random.randint(20, 80)
                 glitch_type = "line"
-            elif random.random() < 0.1:
+            elif random.random() < 0.05:
                 new_glitch = random.randint(0, 8000000)
                 glitch_type = "counter"
             elif random.random() < 0.2:
@@ -305,7 +327,11 @@ def main():
                 glitch_type = "command"
             else:
                 new_glitch = get_random_char()
+                new_glitch = "".join(
+                    get_random_char() for _ in range(random.randint(1, 5))
+                )
                 glitch_type = "character"
+
             new_x = random.randint(
                 0, width - len(new_glitch) if glitch_type != "counter" else 10
             )
@@ -316,7 +342,7 @@ def main():
 
         # Remove old glitch characters
         glitch_characters[:] = [
-            gc for gc in glitch_characters if random.random() < 0.975
+            gc for gc in glitch_characters if random.random() < 0.98
         ]
 
         # Randomly shift glitch characters coordinates
@@ -329,7 +355,7 @@ def main():
             glitch_characters[i] = (glitch, (new_x, new_y), birth_time, glitch_type)
 
         # Randomly swap one of the characters for a random one in glitch_characters
-        if glitch_characters and random.random() < 0.1:
+        if glitch_characters and random.random() < 0.5:
             index = random.randint(0, len(glitch_characters) - 1)
             glitch, (x, y), birth_time, glitch_type = glitch_characters[index]
             if glitch_type != "counter":
