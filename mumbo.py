@@ -370,7 +370,13 @@ def get_fake_error():
             f"    at {random.choice(['PROCEDURE DIVISION', 'DATA DIVISION', 'ENVIRONMENT DIVISION'])} in {random.choice(['program.cbl', 'module.cbl', 'service.cbl'])} line {random.randint(10, 200)}",
         ],
     ]
-    return random.choice(error_types)
+    error = random.choice(error_types)
+    for i in range(len(error)):
+        if random.random() < 0.1:  # 10% chance to mutate each character
+            error[i] = "".join(
+                random.choice([char, get_random_char()]) for char in error[i]
+            )
+    return error
 
 
 # Add the call to add_3d_shapes in the main loop
@@ -399,14 +405,14 @@ def main():
 
         os.system("cls" if os.name == "nt" else "clear")
 
-        # Occasionally print a fake Python exception trace
-        if random.random() < 0.1 and fake_error_frames_remaining <= 0:
+        # Occasionally print a fake error
+        if random.random() < 0.01 and fake_error_frames_remaining <= 0:
             fake_error = get_fake_error()
             fake_error_y = random.randint(0, max(0, height - len(fake_error)))
             fake_error_x = random.randint(
                 0, max(0, width - max(len(line) for line in fake_error))
             )
-            fake_error_frames_remaining = random.randint(5, 20)
+            fake_error_frames_remaining = random.randint(5, 50)
 
         if fake_error_frames_remaining > 0:
             if random.random() < 0.1:
