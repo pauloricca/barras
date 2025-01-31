@@ -280,7 +280,7 @@ def main():
             elif random.random() < 0.3:
                 new_glitch = str(glitch_counter)
                 glitch_counter += 1
-            elif random.random() < 0.3:
+            elif random.random() < 0.1:
                 new_glitch = random.choice(fake_commands)
             else:
                 new_glitch = chr(
@@ -292,7 +292,7 @@ def main():
 
         # Remove old glitch characters
         glitch_characters[:] = [
-            gc for gc in glitch_characters if random.random() < 0.99
+            gc for gc in glitch_characters if random.random() < 0.97
         ]
 
         time.sleep(0.04)
