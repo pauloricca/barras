@@ -11,7 +11,6 @@ def get_terminal_size():
 
 fixed_characters = []
 glitch_characters = []
-glitch_counter = 0
 draw_cube = False
 use_colors = False  # Set this to False to disable colors
 probability_of_colour = 0.1  # Probability of a character being colored
@@ -34,22 +33,22 @@ fake_commands = [
     "vmstat",
     "iostat",
     "sar -u 1 3",
-    "ssh user@host",
-    "scp file user@host:/path",
-    "chmod 755 script.sh",
-    "chown user:group file",
-    "find / -name '*.log'",
+    "ssh admin@huuik.com",
+    "scp file user@hjs:/",
+    "chmod 755 /usr/local/bin/script.sh",
+    "chown user:group /var/log/file",
+    "find /var/log -name '*.log'",
     "grep 'error' /var/log/syslog",
-    "awk '{print $1}' file",
-    "sed 's/foo/bar/g' file",
-    "tar -czvf archive.tar.gz /path/to/dir",
-    "gzip file",
-    "gunzip file.gz",
-    "bzip2 file",
-    "bunzip2 file.bz2",
-    "zip -r archive.zip /path/to/dir",
-    "unzip archive.zip",
-    "rsync -avz /src/ /dest/",
+    "awk '{print $1}' /etc/hosts",
+    "sed 's/foo/bar/g' /etc/hostname",
+    "tar -czvf /tmp/installer.tar.gz /usr/local/share",
+    "gzip /var/log/file",
+    "gunzip /var/log/file.gz",
+    "bzip2 /var/log/file",
+    "bunzip2 /var/log/file.bz2",
+    "zip -r /tmp/archive.zip /usr/local/share",
+    "unzip /tmp/archive.zip",
+    "rsync -avz /home/user/ /backup/user/",
     "mount /dev/sda1 /mnt",
     "umount /mnt",
     "fdisk -l",
@@ -61,10 +60,10 @@ fake_commands = [
     "groupadd newgroup",
     "groupdel newgroup",
     "crontab -e",
-    "systemctl start service",
-    "systemctl stop service",
-    "systemctl restart service",
-    "systemctl status service",
+    "systemctl start apache2",
+    "systemctl stop apache2",
+    "systemctl restart apache2",
+    "systemctl status apache2",
     "journalctl -xe",
     "hostnamectl",
     "timedatectl",
@@ -87,11 +86,17 @@ fake_commands = [
     "nmcli device wifi hotspot ifname wlan0 ssid 'SSID' password 'ljfwseSDC'",
     "nmcli radio wifi off",
     "nmcli radio wifi on",
-    "nmcli general status",
-    "nmcli general permissions",
-    "nmcli general ethernet",
-    "nmcli general ip6erspan",
+    "who am i?",
+    "does god exist?",
+    "whats beyond?",
+    "is there a meaning to life?",
+    "is anyone listening?",
+    "love me",
 ]
+
+
+def get_random_char():
+    return chr(random.randint(33, 126))
 
 
 def generate_frame(width, height, empty_percentage):
@@ -105,7 +110,7 @@ def generate_frame(width, height, empty_percentage):
             if random.random() < empty_percentage * (1 - probability):
                 line += " "
             else:
-                line += chr(random.randint(33, 126))  # Use a wider range of characters
+                line += get_random_char()
         frame.append(line)
 
     # Add fixed characters to the frame with trails
@@ -117,20 +122,33 @@ def generate_frame(width, height, empty_percentage):
                 bold_red_char = char
             frame[y] = frame[y][:x] + bold_red_char + frame[y][x + 1 :]
             # Add trails
-            for i in range(1, 6):
+            for i in range(1, 4):
                 if y + i < height:
                     if use_colors or random.random() < probability_of_colour:
-                        trail_char = f"\033[1;3{2};2{i * 3}3{2};2{i * 3}m{char}\033[0m"
+                        trail_char = f"\033[1;3{2};2{i * 3}3{2};2{i * 3}m{get_random_char()}\033[0m"
                     else:
-                        trail_char = char
+                        trail_char = get_random_char()
                     frame[y + i] = frame[y + i][:x] + trail_char + frame[y + i][x + 1 :]
 
     # Add glitch characters
-    for glitch, (x, y) in glitch_characters:
+    for glitch, (x, y), birth_time, glitch_type in glitch_characters:
         if 0 <= y < height and 0 <= x < width:
-            glitch_str = glitch
+            glitch_str = (
+                glitch
+                if glitch_type != "counter"
+                else ":"
+                + str(int(glitch + (time.time_ns() / 1000 - birth_time / 1000)))
+            )
+
+            if glitch_type == "command":
+                elapsed_time_ms = (time.time_ns() - birth_time) / 1_000_000
+                max_length = min(len(glitch_str), int(elapsed_time_ms / 100))
+                glitch_str = glitch_str[:max_length]
+                if int(elapsed_time_ms / 50) % 2 == 0:
+                    glitch_str += "█"
+
             if use_colors or random.random() < probability_of_colour:
-                glitch_str = f"\033[1;3{random.randint(1, 7)}m{glitch}\033[0m"
+                glitch_str = f"\033[1;3{random.randint(1, 7)}m{glitch_str}\033[0m"
             # Ensure the glitch string does not overflow the line length
             max_length = width - x
             glitch_str = glitch_str[:max_length]
@@ -232,7 +250,7 @@ def add_3d_shapes(frame, width, height, elapsed_time):
 
 # Add the call to add_3d_shapes in the main loop
 def main():
-    global glitch_counter, draw_cube, use_colors
+    global draw_cube, use_colors
     period = 1  # period of the sine function in seconds
     start_time = time.time()
 
@@ -261,39 +279,62 @@ def main():
         # Update fixed characters
         for i in range(len(fixed_characters)):
             char, (x, y) = fixed_characters[i]
-            new_char = chr(random.randint(33, 126))  # Use a wider range of characters
-            fixed_characters[i] = (new_char, (x, y + 1))
+            new_char = get_random_char()  # Use a wider range of characters
+            fixed_characters[i] = (new_char, (x + random.randint(-1, 1), y + 1))
 
         # Remove characters that have fallen off the screen
         fixed_characters[:] = [fc for fc in fixed_characters if fc[1][1] < height]
 
         # Occasionally add a new fixed character
         if random.random() < 0.1:
-            new_char = chr(random.randint(33, 126))  # Use a wider range of characters
+            new_char = get_random_char()  # Use a wider range of characters
             new_x = random.randint(0, width - 1)
             fixed_characters.append((new_char, (new_x, 0)))
 
         # Occasionally add a new glitch character
         if random.random() < 0.5:
-            if random.random() < 0.04:
+            glitch_type = ""
+            if random.random() < 0.02:
                 new_glitch = "-" * random.randint(20, 80)
-            elif random.random() < 0.3:
-                new_glitch = str(glitch_counter)
-                glitch_counter += 1
+                glitch_type = "line"
             elif random.random() < 0.1:
+                new_glitch = random.randint(0, 8000000)
+                glitch_type = "counter"
+            elif random.random() < 0.2:
                 new_glitch = random.choice(fake_commands)
+                glitch_type = "command"
             else:
-                new_glitch = chr(
-                    random.randint(33, 126)
-                )  # Use a wider range of characters
-            new_x = random.randint(0, width - len(new_glitch))
+                new_glitch = get_random_char()
+                glitch_type = "character"
+            new_x = random.randint(
+                0, width - len(new_glitch) if glitch_type != "counter" else 10
+            )
             new_y = random.randint(0, height - 1)
-            glitch_characters.append((new_glitch, (new_x, new_y)))
+            glitch_characters.append(
+                (new_glitch, (new_x, new_y), time.time_ns(), glitch_type)
+            )
 
         # Remove old glitch characters
         glitch_characters[:] = [
-            gc for gc in glitch_characters if random.random() < 0.97
+            gc for gc in glitch_characters if random.random() < 0.975
         ]
+
+        # Randomly shift glitch characters coordinates
+        for i in range(len(glitch_characters)):
+            glitch, (x, y), birth_time, glitch_type = glitch_characters[i]
+            shift_x = random.randint(-1, 1) if random.random() < 0.1 else 0
+            shift_y = random.randint(-1, 1) if random.random() < 0.1 else 0
+            new_x = max(0, min(width - 1, x + shift_x))
+            new_y = max(0, min(height - 1, y + shift_y))
+            glitch_characters[i] = (glitch, (new_x, new_y), birth_time, glitch_type)
+
+        # Randomly swap one of the characters for a random one in glitch_characters
+        if glitch_characters and random.random() < 0.1:
+            index = random.randint(0, len(glitch_characters) - 1)
+            glitch, (x, y), birth_time, glitch_type = glitch_characters[index]
+            if glitch_type != "counter":
+                new_char = get_random_char()
+                glitch_characters[index] = (new_char, (x, y), birth_time, glitch_type)
 
         time.sleep(0.04)
 
