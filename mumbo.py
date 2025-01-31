@@ -342,7 +342,7 @@ def main():
 
         # Remove old glitch characters
         glitch_characters[:] = [
-            gc for gc in glitch_characters if random.random() < 0.98
+            gc for gc in glitch_characters if random.random() < 0.97
         ]
 
         # Randomly shift glitch characters coordinates
