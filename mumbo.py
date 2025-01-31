@@ -382,7 +382,7 @@ def get_fake_error():
 # Add the call to add_3d_shapes in the main loop
 def main():
     global draw_cube, use_colors, fake_error, fake_error_x, fake_error_y, fake_error_frames_remaining
-    period = 1  # period of the sine function in seconds
+    period = 5  # period of the sine function in seconds
     start_time = time.time()
 
     while True:
