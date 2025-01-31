@@ -374,7 +374,7 @@ def main():
         if random.random() < 0.5:
             glitch_type = ""
             if random.random() < 0.02:
-                new_glitch = "-" * random.randint(20, 80)
+                new_glitch = get_random_char() * random.randint(20, 80)
                 glitch_type = "line"
             elif random.random() < 0.05:
                 new_glitch = random.randint(0, 8000000)
