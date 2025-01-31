@@ -365,7 +365,7 @@ def main():
         fixed_characters[:] = [fc for fc in fixed_characters if fc[1][1] < height]
 
         # Occasionally add a new fixed character
-        if random.random() < 0.1:
+        if random.random() < 0.03:
             new_char = get_random_char()  # Use a wider range of characters
             new_x = random.randint(0, width - 1)
             fixed_characters.append((new_char, (new_x, 0)))
@@ -412,7 +412,7 @@ def main():
             glitch_characters[i] = (glitch, (new_x, new_y), birth_time, glitch_type)
 
         # Randomly swap one of the characters for a random one in glitch_characters
-        if glitch_characters and random.random() < 0.5:
+        if glitch_characters and random.random() < 1:
             index = random.randint(0, len(glitch_characters) - 1)
             glitch, (x, y), birth_time, glitch_type = glitch_characters[index]
             if glitch_type != "counter":
