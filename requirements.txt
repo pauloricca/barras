@@ -1,5 +1,4 @@
-sounddevice
-scipy
-Pillow==8.4.0
-numpy==1.21.4
-opencv-python==4.5.3
+Pillow
+numpy
+opencv-python==4.8.1.78
+python3-tk
