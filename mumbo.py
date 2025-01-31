@@ -101,7 +101,7 @@ def generate_frame(width, height, empty_percentage):
         line = ""
         for x in range(width):
             distance_to_center = math.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
-            probability = 1 / (1 + distance_to_center**1.5)
+            probability = 1 / (1 + distance_to_center**2)
             if random.random() < empty_percentage * (1 - probability):
                 line += " "
             else:
@@ -128,11 +128,13 @@ def generate_frame(width, height, empty_percentage):
     # Add glitch characters
     for glitch, (x, y) in glitch_characters:
         if 0 <= y < height and 0 <= x < width:
+            glitch_str = glitch
             if use_colors or random.random() < probability_of_colour:
                 glitch_str = f"\033[1;3{random.randint(1, 7)}m{glitch}\033[0m"
-            else:
-                glitch_str = glitch
-            frame[y] = frame[y][:x] + glitch_str + frame[y][x + len(glitch) :]
+            # Ensure the glitch string does not overflow the line length
+            max_length = width - x
+            glitch_str = glitch_str[:max_length]
+            frame[y] = frame[y][:x] + glitch_str + frame[y][x + len(glitch_str) :]
 
     return frame
 
@@ -163,7 +165,8 @@ def project_point_3d(x, y, z, width, height, fov, viewer_distance):
 def draw_shape(frame, vertices, edges, width, height, angle_x, angle_y, angle_z):
     projected_vertices = []
     for vertex in vertices:
-        rotated_vertex = rotate_point_3d(*vertex, angle_x, angle_y, angle_z)
+        scaled_vertex = tuple(coord * 0.25 for coord in vertex)  # Scale down the shape
+        rotated_vertex = rotate_point_3d(*scaled_vertex, angle_x, angle_y, angle_z)
         projected_vertex = project_point_3d(
             *rotated_vertex, width, height, fov=256, viewer_distance=4
         )
@@ -179,7 +182,10 @@ def draw_shape(frame, vertices, edges, width, height, angle_x, angle_y, angle_z)
 def draw_line(frame, x1, y1, x2, y2):
     dx, dy = x2 - x1, y2 - y1
     steps = max(abs(dx), abs(dy))
-    x_inc, y_inc = dx / steps, dy / steps
+    if steps == 0:
+        x_inc, y_inc = 0, 0
+    else:
+        x_inc, y_inc = dx / steps, dy / steps
     x, y = x1, y1
     for _ in range(steps):
         if 0 <= int(y) < len(frame) and 0 <= int(x) < len(frame[0]):
@@ -226,11 +232,16 @@ def add_3d_shapes(frame, width, height, elapsed_time):
 
 # Add the call to add_3d_shapes in the main loop
 def main():
-    global glitch_counter, draw_cube
+    global glitch_counter, draw_cube, use_colors
     period = 1  # period of the sine function in seconds
     start_time = time.time()
 
     while True:
+        if random.random() < (0.1 if draw_cube else 0.01):
+            draw_cube = not draw_cube
+        if random.random() < (0.1 if use_colors else 0.01):
+            use_colors = not use_colors
+
         (width, height) = get_terminal_size()
         current_time = time.time()
         elapsed_time = current_time - start_time
@@ -264,7 +275,7 @@ def main():
 
         # Occasionally add a new glitch character
         if random.random() < 0.5:
-            if random.random() < 0.1:
+            if random.random() < 0.04:
                 new_glitch = "-" * random.randint(20, 80)
             elif random.random() < 0.3:
                 new_glitch = str(glitch_counter)
