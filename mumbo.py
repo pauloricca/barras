@@ -1,517 +1,77 @@
 import os
 import random
 import time
-import math
-import shutil
 
 
-def get_terminal_size():
-    return shutil.get_terminal_size((80, 20))
+from fake_error import print_fake_error
+from noisy_characters import print_noisy_characters
+from three_d_shapes import print_3d_shapes
+from falling_characters import print_falling_characters
+from glitch_characters import print_glitch_characters
+from mumbo_types import Config
 
 
-fixed_characters = []
-glitch_characters = []
-draw_cube = False
-use_colors = False  # Set this to False to disable colors
-probability_of_colour = 0.1  # Probability of a character being colored
-
-fake_commands = [
-    "ls -la",
-    "cat /etc/passwd",
-    "sudo rm -rf /",
-    "ping 192.13.0.1",
-    "ps aux",
-    "top",
-    "netstat -an",
-    "ifconfig",
-    "whoami",
-    "df -h",
-    "du -sh *",
-    "uptime",
-    "dmesg | tail",
-    "free -m",
-    "vmstat",
-    "iostat",
-    "sar -u 1 3",
-    "ssh admin@huuik.com",
-    "scp file user@hjs:/",
-    "chmod 755 /usr/local/bin/script.sh",
-    "chown user:group /var/log/file",
-    "find /var/log -name '*.log'",
-    "grep 'error' /var/log/syslog",
-    "awk '{print $1}' /etc/hosts",
-    "sed 's/sexy/g' /etc/hostname",
-    "tar -czvf /tmp/installer.tar.gz /usr/local/share",
-    "gzip /var/log/file",
-    "gunzip /var/log/file.gz",
-    "bzip2 /var/log/file",
-    "bunzip2 /var/log/file.bz2",
-    "zip -r /tmp/archive.zip /usr/local/share",
-    "unzip /tmp/archive.zip",
-    "rsync -avz /home/user/ /backup/user/",
-    "mount /dev/sda1 /mnt",
-    "umount /mnt",
-    "fdisk -l",
-    "mkfs.ext4 /dev/sda1",
-    "useradd newuser",
-    "passwd newuser",
-    "usermod -aG sudo newuser",
-    "userdel newuser",
-    "groupadd newgroup",
-    "groupdel newgroup",
-    "crontab -e",
-    "systemctl start apache2",
-    "systemctl stop apache2",
-    "systemctl restart apache2",
-    "systemctl status apache2",
-    "journalctl -xe",
-    "hostnamectl",
-    "timedatectl",
-    "hwclock",
-    "lsblk",
-    "blkid",
-    "parted /dev/sda",
-    "lsof -i",
-    "ss -tuln",
-    "iptables -L",
-    "ip link show",
-    "ip addr show",
-    "ip route show",
-    "nmcli device status",
-    "nmcli connection show",
-    "nmcli connection up id 'connection_name'",
-    "nmcli connection down id 'connection_name'",
-    "nmcli device wifi list",
-    "nmcli device wifi connect 'SSID' password 'alnc32vFS£'",
-    "nmcli device wifi hotspot ifname wlan0 ssid 'SSID' password 'ljfwseSDC'",
-    "nmcli radio wifi off",
-    "nmcli radio wifi on",
-    "love me",
-    "dd if=/dev/zero of=/dev/sda bs=1M",
-    "mkfs.ext4 /dev/sda",
-    "rm -rf / --no-preserve-root",
-    "dd if=/dev/random of=/dev/sda",
-    "echo 'c' > /proc/sysrq-trigger",
-    "echo 1 > /proc/sys/kernel/panic",
-    "echo 1 > /proc/sys/kernel/panic_on_oops",
-    "echo b > /proc/sysrq-trigger",
-    "echo o > /proc/sysrq-trigger",
-    "shutdown -h now",
-    "who am i?",
-    "does god exist?",
-    "whats beyond?",
-    "is there a meaning to life?",
-    "is anyone listening?",
-    "am i alive?",
-    "what is reality?",
-    "what is love?",
-    "what is time?",
-    "what is space?",
-    "am i dreaming?",
-    "what is consciousness?",
-    "is there any point?",
-    "is there life after death?",
-    "what is the nature of reality?",
-    "are we alone in the universe?",
-    "is there a higher power?",
-]
-
-
-def get_random_char():
-    return chr(random.randint(33, 126))
-
-
-def generate_frame(width, height, empty_percentage):
-    frame = []
-    center_x, center_y = width // 2, height // 2
-    for y in range(height):
-        line = ""
-        for x in range(width):
-            distance_to_center = math.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
-            probability = 1 / (1 + distance_to_center**2)
-            if random.random() < empty_percentage * (1 - probability):
-                line += " "
-            else:
-                line += get_random_char()
-        frame.append(line)
-
-    # Add fixed characters to the frame with trails
-    for char, (x, y) in fixed_characters:
-        if 0 <= y < height and 0 <= x < width:
-            if use_colors or random.random() < probability_of_colour:
-                bold_red_char = f"\033[1;31m{char}\033[0m"
-            else:
-                bold_red_char = char
-            frame[y] = frame[y][:x] + bold_red_char + frame[y][x + 1 :]
-            # Add trails
-            for i in range(1, 4):
-                if y + i < height:
-                    if use_colors or random.random() < probability_of_colour:
-                        trail_char = f"\033[1;3{2};2{i * 3}3{2};2{i * 3}m{get_random_char()}\033[0m"
-                    else:
-                        trail_char = get_random_char()
-                    frame[y + i] = frame[y + i][:x] + trail_char + frame[y + i][x + 1 :]
-
-    # Add glitch characters
-    for glitch, (x, y), birth_time, glitch_type in glitch_characters:
-        if 0 <= y < height and 0 <= x < width:
-            glitch_str = (
-                glitch
-                if glitch_type != "counter"
-                else ":"
-                + str(int(glitch + (time.time_ns() / 1000 - birth_time / 1000)))
-            )
-
-            if glitch_type == "command":
-                elapsed_time_ms = (time.time_ns() - birth_time) / 1_000_000
-                max_length = min(len(glitch_str), int(elapsed_time_ms / 100))
-                glitch_str = glitch_str[:max_length]
-                if int(elapsed_time_ms / 50) % 2 == 0:
-                    glitch_str += "█"
-
-            if use_colors or random.random() < probability_of_colour:
-                glitch_str = f"\033[1;3{random.randint(1, 7)}m{glitch_str}\033[0m"
-            # Ensure the glitch string does not overflow the line length
-            max_length = width - x
-            glitch_str = glitch_str[:max_length]
-            frame[y] = frame[y][:x] + glitch_str + frame[y][x + len(glitch_str) :]
-
-    return frame
-
-
-def rotate_point_3d(x, y, z, angle_x, angle_y, angle_z):
-    # Rotate around x-axis
-    cos_x, sin_x = math.cos(angle_x), math.sin(angle_x)
-    y, z = y * cos_x - z * sin_x, y * sin_x + z * cos_x
-
-    # Rotate around y-axis
-    cos_y, sin_y = math.cos(angle_y), math.sin(angle_y)
-    x, z = x * cos_y + z * sin_y, -x * sin_y + z * cos_y
-
-    # Rotate around z-axis
-    cos_z, sin_z = math.cos(angle_z), math.sin(angle_z)
-    x, y = x * cos_z - y * sin_z, x * sin_z + y * cos_z
-
-    return x, y, z
-
-
-def project_point_3d(x, y, z, width, height, fov, viewer_distance):
-    factor = fov / (viewer_distance + z)
-    x = x * factor + width / 2
-    y = -y * factor + height / 2
-    return int(x), int(y)
-
-
-def draw_shape(frame, vertices, edges, width, height, angle_x, angle_y, angle_z):
-    projected_vertices = []
-    for vertex in vertices:
-        scaled_vertex = tuple(coord * 0.25 for coord in vertex)  # Scale down the shape
-        rotated_vertex = rotate_point_3d(*scaled_vertex, angle_x, angle_y, angle_z)
-        projected_vertex = project_point_3d(
-            *rotated_vertex, width, height, fov=256, viewer_distance=4
-        )
-        projected_vertices.append(projected_vertex)
-
-    for edge in edges:
-        start, end = edge
-        x1, y1 = projected_vertices[start]
-        x2, y2 = projected_vertices[end]
-        draw_line(frame, x1, y1, x2, y2)
-
-
-def draw_line(frame, x1, y1, x2, y2):
-    dx, dy = x2 - x1, y2 - y1
-    steps = max(abs(dx), abs(dy))
-    if steps == 0:
-        x_inc, y_inc = 0, 0
-    else:
-        x_inc, y_inc = dx / steps, dy / steps
-    x, y = x1, y1
-    for _ in range(steps):
-        if 0 <= int(y) < len(frame) and 0 <= int(x) < len(frame[0]):
-            frame[int(y)] = (
-                frame[int(y)][: int(x)]
-                + get_random_char()
-                + frame[int(y)][int(x) + 1 :]
-            )
-        x += x_inc
-        y += y_inc
-
-
-current_shape = 0
-
-
-def add_3d_shapes(frame, width, height, elapsed_time):
-    global current_shape
-
-    angle_x = elapsed_time * 0.5
-    angle_y = elapsed_time * 0.3
-    angle_z = elapsed_time * 0.2
-
-    # Define vertices and edges for a cube
-    cube_vertices = [
-        (-1, -1, -1),
-        (1, -1, -1),
-        (1, 1, -1),
-        (-1, 1, -1),
-        (-1, -1, 1),
-        (1, -1, 1),
-        (1, 1, 1),
-        (-1, 1, 1),
-    ]
-    cube_edges = [
-        (0, 1),
-        (1, 2),
-        (2, 3),
-        (3, 0),
-        (4, 5),
-        (5, 6),
-        (6, 7),
-        (7, 4),
-        (0, 4),
-        (1, 5),
-        (2, 6),
-        (3, 7),
-    ]
-
-    # Define vertices and edges for a tetrahedron
-    tetrahedron_vertices = [
-        (1, 1, 1),
-        (-1, -1, 1),
-        (-1, 1, -1),
-        (1, -1, -1),
-    ]
-    tetrahedron_edges = [
-        (0, 1),
-        (0, 2),
-        (0, 3),
-        (1, 2),
-        (1, 3),
-        (2, 3),
-    ]
-
-    # Define vertices and edges for an octahedron
-    octahedron_vertices = [
-        (1, 0, 0),
-        (-1, 0, 0),
-        (0, 1, 0),
-        (0, -1, 0),
-        (0, 0, 1),
-        (0, 0, -1),
-    ]
-    octahedron_edges = [
-        (0, 2),
-        (0, 3),
-        (0, 4),
-        (0, 5),
-        (1, 2),
-        (1, 3),
-        (1, 4),
-        (1, 5),
-        (2, 4),
-        (2, 5),
-        (3, 4),
-        (3, 5),
-    ]
-
-    shapes = [
-        (cube_vertices, cube_edges),
-        (tetrahedron_vertices, tetrahedron_edges),
-        (octahedron_vertices, octahedron_edges),
-    ]
-
-    if random.random() < 0.01:
-        current_shape = random.randint(0, len(shapes) - 1)
-
-    vertices, edges = shapes[current_shape]
-    draw_shape(frame, vertices, edges, width, height, angle_x, angle_y, angle_z)
-
-
-fake_error = []
-fake_error_x = 0
-fake_error_y = 0
-fake_error_frames_remaining = 0
-
-
-def get_fake_error():
-    error_types = [
-        [
-            "Traceback (most recent call last):",
-            f'  File "/Users/pauloricca/Desktop/projects/barras/mumbo.py", line {random.randint(10, 200)}, in <module>',
-            f"    {random.choice(fake_commands)}",
-            f"{random.choice(['NameError', 'TypeError', 'ValueError', 'AttributeError'])}: {random.choice(['name', 'type', 'value', 'attribute'])} '{get_random_char()}' is not defined",
-        ],
-        [
-            'Exception in thread "main" java.lang.NullPointerException',
-            f"\tat {random.choice(['com.example.Main.main', 'com.example.Helper.process', 'com.example.Service.run'])}({random.choice(['Main.java', 'Helper.java', 'Service.java'])}:{random.randint(10, 200)})",
-        ],
-        [
-            "Unhandled Exception: System.NullReferenceException",
-            f"   at {random.choice(['Example.Program.Main', 'Example.Helper.Process', 'Example.Service.Run'])}() in {random.choice(['Program.cs', 'Helper.cs', 'Service.cs'])}:line {random.randint(10, 200)}",
-        ],
-        [
-            "SyntaxError: unexpected EOF while parsing",
-            f'  File "/Users/pauloricca/Desktop/projects/barras/mumbo.py", line {random.randint(10, 200)}',
-        ],
-        [
-            "Segmentation fault (core dumped)",
-            f"    at {random.choice(['main', 'function', 'process'])}() in {random.choice(['program.c', 'module.c', 'service.c'])}:{random.randint(10, 200)}",
-        ],
-        [
-            "Bus error (core dumped)",
-            f"    at {random.choice(['main', 'function', 'process'])}() in {random.choice(['program.c', 'module.c', 'service.c'])}:{random.randint(10, 200)}",
-        ],
-        [
-            "COBOL runtime error",
-            f"    at {random.choice(['PROCEDURE DIVISION', 'DATA DIVISION', 'ENVIRONMENT DIVISION'])} in {random.choice(['program.cbl', 'module.cbl', 'service.cbl'])} line {random.randint(10, 200)}",
-        ],
-        [
-            "COBOL syntax error",
-            f"    at {random.choice(['PROCEDURE DIVISION', 'DATA DIVISION', 'ENVIRONMENT DIVISION'])} in {random.choice(['program.cbl', 'module.cbl', 'service.cbl'])} line {random.randint(10, 200)}",
-        ],
-    ]
-
-    if random.random() < 0.1:
-        with open(__file__, "r") as f:
-            lines = f.readlines()
-            start_line = random.randint(0, len(lines) - 6)
-            num_lines = random.randint(3, 6)
-            error = lines[start_line : start_line + num_lines]
-            error = [line.strip() for line in error]
-    else:
-        error = random.choice(error_types)
-
-    for i in range(len(error)):
-        if random.random() < 0.1:  # 10% chance to mutate each character
-            error[i] = "".join(
-                random.choice([char, get_random_char()]) for char in error[i]
-            )
-    return error
-
+current_config = Config(
+    use_colors=False,
+    probability_of_noisy_characters=1,
+    probability_of_colour=0.1,
+    probability_of_error=0.01,
+    probability_of_mutating_new_glitch_characters=0.01,
+    probability_of_mutating_existing_glitch_characters=0.001,
+    probability_of_turning_off_colours=0.1,
+    probability_of_turning_on_colours=0.01,
+    probability_of_turning_off_3d_shapes=0.1,
+    probability_of_turning_on_3d_shapes=0.01,
+    probability_of_changing_3d_shape=0.01,
+    probability_of_new_falling_character=0.03
+)
 
 is_blinking_on = False
+number_of_lines_in_last_frame = 0
 
 
-# Add the call to add_3d_shapes in the main loop
 def main():
-    global draw_cube, use_colors, fake_error, fake_error_x, fake_error_y, fake_error_frames_remaining, is_blinking_on
-    period = 5  # period of the sine function in seconds
+    global current_config, is_blinking_on, number_of_lines_in_last_frame
+   
     start_time = time.time()
 
     while True:
-        if random.random() < (0.1 if draw_cube else 0.01):
-            draw_cube = not draw_cube
-        if random.random() < (0.1 if use_colors else 0.01):
-            use_colors = not use_colors
+        if random.random() < (
+            current_config.probability_of_turning_off_colours
+            if current_config.use_colors
+            else current_config.probability_of_turning_on_colours
+        ):
+            current_config.use_colors = not current_config.use_colors
 
+        
         is_blinking_on = not is_blinking_on
 
-        (width, height) = get_terminal_size()
+        (width, height) = os.get_terminal_size()
         current_time = time.time()
         elapsed_time = current_time - start_time
-        empty_percentage = (
-            (math.sin(2 * math.pi * elapsed_time / period) ** 3 + 1) / 2
-        ) ** 0.01
+        
+        # Generate empty frame
+        frame = [" " * width for _ in range(height)]
 
-        frame = generate_frame(width, height, empty_percentage)
+        print_noisy_characters(frame, width, height, elapsed_time, current_config)
+        print_3d_shapes(frame, width, height, elapsed_time, current_config)
+        print_falling_characters(frame, width, height, current_config)
+        print_glitch_characters(frame, width, height, current_config)
+        print_fake_error(frame, width, height, current_config, is_blinking_on)
 
-        if draw_cube:
-            add_3d_shapes(frame, width, height, elapsed_time)
+        # Clear the console
+        # os.system("cls" if os.name == "nt" else "clear")
 
-        os.system("cls" if os.name == "nt" else "clear")
+        # Empty the console's previous lines
+        for _ in range(number_of_lines_in_last_frame):
+            # print("\033[A\033[K", end="")
+            print("\033[1A", end="\x1b[2K")
 
-        # Occasionally print a fake error
-        if random.random() < 0.01 and fake_error_frames_remaining <= 0:
-            fake_error = get_fake_error()
-            fake_error_y = random.randint(0, max(0, height - len(fake_error)))
-            fake_error_x = random.randint(
-                0, max(0, width - max(len(line) for line in fake_error))
-            )
-            fake_error_frames_remaining = random.randint(5, 50)
-
-        if fake_error_frames_remaining > 0:
-            if random.random() < 0.1:
-                fake_error_x = max(
-                    0, min(width - 1, fake_error_x + random.randint(-1, 1))
-                )
-                fake_error_y = max(
-                    0, min(height - 1, fake_error_y + random.randint(-1, 1))
-                )
-            for i, line in enumerate(fake_error):
-                if is_blinking_on and fake_error_y + i < height:
-                    frame[fake_error_y + i] = (
-                        frame[fake_error_y + i][:fake_error_x]
-                        + line
-                        + frame[fake_error_y + i][fake_error_x + len(line) :]
-                    )
-                fake_error_frames_remaining -= 1
-
+        # Render
         for line in frame:
             print(line)
 
-        # Update fixed characters
-        for i in range(len(fixed_characters)):
-            char, (x, y) = fixed_characters[i]
-            new_char = get_random_char()  # Use a wider range of characters
-            fixed_characters[i] = (new_char, (x + random.randint(-1, 1), y + 1))
-
-        # Remove characters that have fallen off the screen
-        fixed_characters[:] = [fc for fc in fixed_characters if fc[1][1] < height]
-
-        # Occasionally add a new fixed character
-        if random.random() < 0.03:
-            new_char = get_random_char()  # Use a wider range of characters
-            new_x = random.randint(0, width - 1)
-            fixed_characters.append((new_char, (new_x, 0)))
-
-        # Occasionally add a new glitch character
-        if random.random() < 0.5:
-            glitch_type = ""
-            if random.random() < 0.02:
-                new_glitch = get_random_char() * random.randint(20, 80)
-                glitch_type = "line"
-            elif random.random() < 0.05:
-                new_glitch = random.randint(0, 8000000)
-                glitch_type = "counter"
-            elif random.random() < 0.2:
-                new_glitch = random.choice(fake_commands)
-                glitch_type = "command"
-            else:
-                new_glitch = get_random_char()
-                new_glitch = "".join(
-                    get_random_char() for _ in range(random.randint(1, 5))
-                )
-                glitch_type = "character"
-
-            new_x = random.randint(
-                0, width - len(new_glitch) if glitch_type != "counter" else 10
-            )
-            new_y = random.randint(0, height - 1)
-            glitch_characters.append(
-                (new_glitch, (new_x, new_y), time.time_ns(), glitch_type)
-            )
-
-        # Remove old glitch characters
-        glitch_characters[:] = [
-            gc for gc in glitch_characters if random.random() < 0.97
-        ]
-
-        # Randomly shift glitch characters coordinates
-        for i in range(len(glitch_characters)):
-            glitch, (x, y), birth_time, glitch_type = glitch_characters[i]
-            shift_x = random.randint(-1, 1) if random.random() < 0.1 else 0
-            shift_y = random.randint(-1, 1) if random.random() < 0.1 else 0
-            new_x = max(0, min(width - 1, x + shift_x))
-            new_y = max(0, min(height - 1, y + shift_y))
-            glitch_characters[i] = (glitch, (new_x, new_y), birth_time, glitch_type)
-
-        # Randomly swap one of the characters for a random one in glitch_characters
-        if glitch_characters and random.random() < 1:
-            index = random.randint(0, len(glitch_characters) - 1)
-            glitch, (x, y), birth_time, glitch_type = glitch_characters[index]
-            if glitch_type != "counter":
-                new_char = get_random_char()
-                glitch_characters[index] = (new_char, (x, y), birth_time, glitch_type)
+        number_of_lines_in_last_frame = len(frame)
 
         time.sleep(0.04)
 
