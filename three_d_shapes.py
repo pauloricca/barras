@@ -73,10 +73,9 @@ def print_3d_shapes(
 ):
     global current_shape, is_drawing_3d_shapes
 
-    width = len(frame[0])
-    height = len(frame)
-
-    if random.random() < (
+    if current_config.probability_of_turning_on_3d_shapes == 0:
+        is_drawing_3d_shapes = False
+    elif random.random() < (
             current_config.probability_of_turning_off_3d_shapes
             if is_drawing_3d_shapes
             else current_config.probability_of_turning_on_3d_shapes
@@ -86,6 +85,8 @@ def print_3d_shapes(
     if not is_drawing_3d_shapes:
         return
 
+    width = len(frame[0])
+    height = len(frame)
     angle_x = elapsed_time * 0.5
     angle_y = elapsed_time * 0.3
     angle_z = elapsed_time * 0.2

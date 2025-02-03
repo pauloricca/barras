@@ -74,7 +74,6 @@ fake_commands = [
     "nmcli device wifi hotspot ifname wlan0 ssid 'SSID' password 'ljfwseSDC'",
     "nmcli radio wifi off",
     "nmcli radio wifi on",
-    "love me",
     "dd if=/dev/zero of=/dev/sda bs=1M",
     "mkfs.ext4 /dev/sda",
     "rm -rf / --no-preserve-root",
@@ -88,6 +87,7 @@ fake_commands = [
 ]
 
 questions = [
+    "love me",
     "who am i?",
     "does god exist?",
     "what's beyond?",
