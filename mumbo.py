@@ -2,7 +2,6 @@ import os
 import random
 import time
 
-
 from fake_error import print_fake_error
 from noisy_characters import print_noisy_characters
 from three_d_shapes import print_3d_shapes
@@ -13,9 +12,15 @@ from mumbo_types import Config
 
 current_config = Config(
     use_colors=False,
+    noisy_characters_period=5,
     probability_of_noisy_characters=1,
     probability_of_colour=0.1,
     probability_of_error=0.01,
+    probability_of_line_glitch = 0.02,
+    probability_of_counter_glitch = 0.05,
+    probability_of_command_glitch = 0.03,
+    probability_of_question_glitch = 0.01,
+    probability_of_character_glitch = 0.02,
     probability_of_mutating_new_glitch_characters=0.01,
     probability_of_mutating_existing_glitch_characters=0.001,
     probability_of_turning_off_colours=0.1,
@@ -53,11 +58,11 @@ def main():
         # Generate empty frame
         frame = [" " * width for _ in range(height)]
 
-        print_noisy_characters(frame, width, height, elapsed_time, current_config)
-        print_3d_shapes(frame, width, height, elapsed_time, current_config)
-        print_falling_characters(frame, width, height, current_config)
-        print_glitch_characters(frame, width, height, current_config)
-        print_fake_error(frame, width, height, current_config, is_blinking_on)
+        print_noisy_characters(frame, elapsed_time, current_config)
+        print_3d_shapes(frame, elapsed_time, current_config)
+        print_falling_characters(frame, current_config)
+        print_glitch_characters(frame, current_config)
+        print_fake_error(frame, current_config, is_blinking_on)
 
         # Clear the console
         # os.system("cls" if os.name == "nt" else "clear")

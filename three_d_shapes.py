@@ -69,9 +69,12 @@ is_drawing_3d_shapes = False
 
 
 def print_3d_shapes(
-    frame, width, height, elapsed_time, current_config: Config
+    frame, elapsed_time, current_config: Config
 ):
     global current_shape, is_drawing_3d_shapes
+
+    width = len(frame[0])
+    height = len(frame)
 
     if random.random() < (
             current_config.probability_of_turning_off_3d_shapes

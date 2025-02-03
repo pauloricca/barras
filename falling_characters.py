@@ -5,8 +5,11 @@ from utils import get_random_char
 falling_characters = []
 
 
-def print_falling_characters(frame, width, height, current_config: Config):
+def print_falling_characters(frame, current_config: Config):
 	global falling_characters
+
+	width = len(frame[0])
+	height = len(frame)
 					
 	# Update falling characters
 	for i in range(len(falling_characters)):

@@ -64,26 +64,29 @@ def get_fake_error(probability_of_reading_file=0.1, probability_of_mutating_char
     return error
 
 
-def print_fake_error(frame, width, height, current_config: Config, is_blinking_on):
-    global fake_error, fake_error_x, fake_error_y, fake_error_frames_remaining
+def print_fake_error(frame, current_config: Config, is_blinking_on):
+	global fake_error, fake_error_x, fake_error_y, fake_error_frames_remaining
 
-    if random.random() < current_config.probability_of_error and fake_error_frames_remaining <= 0:
-        fake_error = get_fake_error()
-        fake_error_y = random.randint(0, max(0, height - len(fake_error)))
-        fake_error_x = random.randint(
-            0, max(0, width - max(len(line) for line in fake_error))
-        )
-        fake_error_frames_remaining = random.randint(5, 50)
+	width = len(frame[0])
+	height = len(frame)
+	
+	if random.random() < current_config.probability_of_error and fake_error_frames_remaining <= 0:
+			fake_error = get_fake_error()
+			fake_error_y = random.randint(0, max(0, height - len(fake_error)))
+			fake_error_x = random.randint(
+					0, max(0, width - max(len(line) for line in fake_error))
+			)
+			fake_error_frames_remaining = random.randint(5, 50)
 
-    if fake_error_frames_remaining > 0:
-        if random.random() < 0.1:
-            fake_error_x = max(0, min(width - 1, fake_error_x + random.randint(-1, 1)))
-            fake_error_y = max(0, min(height - 1, fake_error_y + random.randint(-1, 1)))
-        for i, line in enumerate(fake_error):
-            if is_blinking_on and fake_error_y + i < height:
-                frame[fake_error_y + i] = (
-                    frame[fake_error_y + i][:fake_error_x]
-                    + line
-                    + frame[fake_error_y + i][fake_error_x + len(line) :]
-                )
-            fake_error_frames_remaining -= 1
+	if fake_error_frames_remaining > 0:
+			if random.random() < 0.1:
+					fake_error_x = max(0, min(width - 1, fake_error_x + random.randint(-1, 1)))
+					fake_error_y = max(0, min(height - 1, fake_error_y + random.randint(-1, 1)))
+			for i, line in enumerate(fake_error):
+					if is_blinking_on and fake_error_y + i < height:
+							frame[fake_error_y + i] = (
+									frame[fake_error_y + i][:fake_error_x]
+									+ line
+									+ frame[fake_error_y + i][fake_error_x + len(line) :]
+							)
+					fake_error_frames_remaining -= 1
