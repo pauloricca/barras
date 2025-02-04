@@ -1,5 +1,9 @@
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import List
+
+def default_puzzle_piece_scale_probability_weights() -> List[float]:
+    return [1]
 
 @dataclass
 class Config:
@@ -25,3 +29,9 @@ class Config:
     probability_of_turning_on_3d_shapes: float = 0
     probability_of_new_falling_character: float = 0
     probability_of_new_tetris_piece: float = 0
+    puzzle_piece_scale_probability_weights: List[float] = field(default_factory=default_puzzle_piece_scale_probability_weights)
+
+
+
+
+    

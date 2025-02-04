@@ -80,13 +80,12 @@ def print_glitch_characters(frame, current_config: Config):
 
     # Add glitch characters
     for glitch, (x, y), birth_time, glitch_type in glitch_characters:
-        if 0 <= y < height and 0 <= x < width:
-            glitch_str = (
-                glitch
-                if glitch_type != "counter"
-                else ":"
-                + str(int(glitch + (time.time_ns() / 1000 - birth_time / 1000)))
-            )
+        glitch_str = (
+            glitch
+            if glitch_type != "counter"
+            else ":"
+            + str(int(glitch + (time.time_ns() / 1000 - birth_time / 1000)))
+        )
 
         if glitch_type == "command":
             elapsed_time_ms = (time.time_ns() - birth_time) / 1_000_000
@@ -95,7 +94,7 @@ def print_glitch_characters(frame, current_config: Config):
 
             has_finished_typing_last_glitch = len(glitch) == max_length
             
-            if current_config.print_glitches_at_bottom_of_frame and y == height - 1:
+            if x == 0:
                     glitch_str = "paulo@mainfrm:/$ " + glitch_str
 
             if int(elapsed_time_ms / 50) % 2 == 0 and (not current_config.print_glitches_at_bottom_of_frame or y == height - 1):

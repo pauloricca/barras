@@ -30,6 +30,7 @@ stages: list[Config] = [
         probability_of_turning_off_colours=0.5,
         probability_of_turning_on_colours=0.005,
         probability_of_mutating_new_glitch_characters=0.01,
+        probability_of_new_tetris_piece=0.01,
     ),
     Config(
         transition_time=15,
@@ -52,7 +53,8 @@ stages: list[Config] = [
         probability_of_turning_on_3d_shapes=0.01,
         probability_of_changing_3d_shape=0.01,
         probability_of_new_falling_character=0.03,
-        probability_of_new_tetris_piece=0.1
+        probability_of_new_tetris_piece=0.05,
+        puzzle_piece_scale_probability_weights=[1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 5],
     )
 ]
 
