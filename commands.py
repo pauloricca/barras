@@ -114,10 +114,10 @@ questions = [
     "does time really exist?",
     "what is the purpose of the universe?",
     "can we ever truly know the truth?",
-    "is there such a thing as free will?",
+    "do i have free will?",
     "am i conscious?",
     "what is the origin of the universe?",
-    "can i ever escape the cycle of birth and death?",
+    "can i escape the cycle of birth and death?",
     "what is good and evil?",
 ]
 
