@@ -54,11 +54,11 @@ def print_glitch_characters(frame, current_config: Config):
             add_glitch("".join(get_random_char() for _ in range(
                 random.randint(1, 5))), "character", width, height, current_config)
 
-    if not current_config.print_glitches_at_bottom_of_frame:
-        # Remove old glitch characters
-        glitch_characters[:] = [
-            gc for gc in glitch_characters if random.random() < 0.98]
+    # Remove old glitch characters
+    glitch_characters[:] = [
+        gc for gc in glitch_characters if random.random() < 0.98 or (gc[1][0] == 0 and current_config.print_glitches_at_bottom_of_frame)]
 
+    if not current_config.print_glitches_at_bottom_of_frame:
          # Randomly shift glitch characters coordinates
         for i in range(len(glitch_characters)):
             glitch, (x, y), birth_time, glitch_type = glitch_characters[i]

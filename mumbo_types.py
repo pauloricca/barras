@@ -24,3 +24,4 @@ class Config:
     probability_of_turning_off_3d_shapes: float = 0
     probability_of_turning_on_3d_shapes: float = 0
     probability_of_new_falling_character: float = 0
+    probability_of_new_tetris_piece: float = 0

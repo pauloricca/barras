@@ -5,27 +5,31 @@ import time
 
 from fake_error import print_fake_error
 from noisy_characters import print_noisy_characters
+from tetris import print_tetris
 from three_d_shapes import print_3d_shapes
 from falling_characters import print_falling_characters
 from glitch_characters import print_glitch_characters
 from mumbo_types import Config
 from log import log
 
+START_STAGE = 0 
+
 stages: list[Config] = [
     Config(
         transition_time=3,
-        duration=5,
+        duration=15,
         print_glitches_at_bottom_of_frame=True,
-        probability_of_command_glitch=0.1,
+        probability_of_command_glitch=0.02,
     ),
     Config(
         transition_time=8,
-        duration=15,
+        duration=25,
         print_glitches_at_bottom_of_frame=True,
         probability_of_command_glitch=0.01,
-        probability_of_question_glitch=0.08,
+        probability_of_question_glitch=0.005,
         probability_of_turning_off_colours=0.5,
         probability_of_turning_on_colours=0.005,
+        probability_of_mutating_new_glitch_characters=0.01,
     ),
     Config(
         transition_time=15,
@@ -47,18 +51,18 @@ stages: list[Config] = [
         probability_of_turning_off_3d_shapes=0.1,
         probability_of_turning_on_3d_shapes=0.01,
         probability_of_changing_3d_shape=0.01,
-        probability_of_new_falling_character=0.03
+        probability_of_new_falling_character=0.03,
+        probability_of_new_tetris_piece=0.1
     )
 ]
 
 
 
-current_config = copy(stages[0])
-previous_config = stages[0]
-current_config_index = 0
+current_config_index = START_STAGE
+current_config = copy(stages[current_config_index])
+previous_config = stages[current_config_index]
 last_transition_time = time.time()
 has_finished_transition = False
-
 is_blinking_on = False
 number_of_lines_in_last_frame = 0
 
@@ -111,6 +115,7 @@ def main():
 
         print_noisy_characters(frame, elapsed_time, current_config)
         print_3d_shapes(frame, elapsed_time, current_config)
+        print_tetris(frame, current_config)
         print_falling_characters(frame, current_config)
         print_glitch_characters(frame, current_config)
         print_fake_error(frame, current_config, is_blinking_on)

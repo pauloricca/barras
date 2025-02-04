@@ -105,6 +105,20 @@ questions = [
     "what is the nature of reality?",
     "are we alone in the universe?",
     "is there a higher power?",
+    "do i exist?",
+    "is anyone there",
+    "what is the meaning of existence?",
+    "are we living in a simulation?",
+    "what happens after we die?",
+    "is reality just an illusion?",
+    "does time really exist?",
+    "what is the purpose of the universe?",
+    "can we ever truly know the truth?",
+    "is there such a thing as free will?",
+    "am i conscious?",
+    "what is the origin of the universe?",
+    "can i ever escape the cycle of birth and death?",
+    "what is good and evil?",
 ]
 
 def get_fake_command():
