@@ -14,6 +14,7 @@ from log import log
 from waves import print_waves
 
 START_STAGE = 2
+FPS = 30
 
 stages: list[Config] = [
     Config(
@@ -40,7 +41,7 @@ stages: list[Config] = [
         noisy_characters_period=5,
         probability_of_noisy_characters=1,
         probability_of_colour=0.1,
-        probability_of_error=0.01,
+        probability_of_error=0.1,
         probability_of_line_glitch=0.02,
         probability_of_counter_glitch=0.05,
         probability_of_command_glitch=0.03,
@@ -74,7 +75,7 @@ number_of_lines_in_last_frame = 0
 
 
 def main():
-    global current_config, is_blinking_on, number_of_lines_in_last_frame, current_config_index, previous_config, last_transition_time, has_finished_transition
+    global current_config, is_blinking_on, number_of_lines_in_last_frame, current_config_index, previous_config, last_transition_time, has_finished_transition, FPS
 
     start_time = time.time()
 
@@ -142,7 +143,7 @@ def main():
 
         number_of_lines_in_last_frame = len(frame)
 
-        time.sleep(0.04)
+        time.sleep(1 / FPS)
 
 
 if __name__ == "__main__":
