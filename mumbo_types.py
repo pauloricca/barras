@@ -30,6 +30,9 @@ class Config:
     probability_of_new_falling_character: float = 0
     probability_of_new_tetris_piece: float = 0
     puzzle_piece_scale_probability_weights: List[float] = field(default_factory=default_puzzle_piece_scale_probability_weights)
+    waves_period: float = 0
+    waves_amplitude: float = 0
+    waves_speed: float = 0
 
 
 

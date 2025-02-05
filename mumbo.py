@@ -11,8 +11,9 @@ from falling_characters import print_falling_characters
 from glitch_characters import print_glitch_characters
 from mumbo_types import Config
 from log import log
+from waves import print_waves
 
-START_STAGE = 0 
+START_STAGE = 2
 
 stages: list[Config] = [
     Config(
@@ -50,11 +51,14 @@ stages: list[Config] = [
         probability_of_turning_off_colours=0.1,
         probability_of_turning_on_colours=0.01,
         probability_of_turning_off_3d_shapes=0.1,
-        probability_of_turning_on_3d_shapes=0.01,
+        probability_of_turning_on_3d_shapes=1.0,
         probability_of_changing_3d_shape=0.01,
         probability_of_new_falling_character=0.03,
         probability_of_new_tetris_piece=0.05,
         puzzle_piece_scale_probability_weights=[1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 5],
+        waves_period=5,
+        waves_amplitude=10,
+        waves_speed=0.5,
     )
 ]
 
@@ -93,8 +97,6 @@ def main():
                     previous_value = getattr(previous_config, attr)
                     interpolated_value = previous_value + (target_value - previous_value) * transition_progress
                     setattr(current_config, attr, interpolated_value)
-                    # if attr == "probability_of_command_glitch":
-                        # log("interpoloation", target_value, previous_value, transition_progress, interpolated_value)
         elif not has_finished_transition:
             current_config = copy(stages[current_config_index])
             log("transtion complete")
@@ -122,13 +124,17 @@ def main():
         print_glitch_characters(frame, current_config)
         print_fake_error(frame, current_config, is_blinking_on)
 
+        # limit the frame to the console's width
+        frame = [line[:width] for line in frame]
+        frame = print_waves(frame, current_config)
+
         # Clear the console
-        # os.system("cls" if os.name == "nt" else "clear")
+        os.system("cls" if os.name == "nt" else "clear")
 
         # Empty the console's previous lines
-        for _ in range(number_of_lines_in_last_frame):
-            # print("\033[A\033[K", end="")
-            print("\033[1A", end="\x1b[2K")
+        # for _ in range(number_of_lines_in_last_frame):
+            ## print("\033[A\033[K", end="")
+            # print("\033[1A", end="\x1b[2K")
 
         # Render
         for line in frame:

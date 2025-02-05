@@ -45,7 +45,8 @@ def print_falling_characters(frame, current_config: Config):
                         current_config.use_colors
                         or random.random() < current_config.probability_of_colour
                     ):
-                        trail_char = f"\033[1;3{2};2{i * 3}3{2};2{i * 3}m{get_random_char()}\033[0m"
+                        trail_char = f"\033[1;31m{char}\033[0m"
+                        # trail_char = f"\033[1;3{2};2{i * 3}3{2};2{i * 3}m{get_random_char()}\033[0m"
                     else:
                         trail_char = get_random_char()
                     frame[y + i] = frame[y + i][:x] + trail_char + frame[y + i][x + 1 :]
